@@ -61,6 +61,7 @@ DROP POLICY IF EXISTS "Allow delete leads" ON public.leads;
 DROP POLICY IF EXISTS "Public can read settings" ON public.settings;
 DROP POLICY IF EXISTS "Allow update settings" ON public.settings;
 DROP POLICY IF EXISTS "Allow insert settings" ON public.settings;
+DROP POLICY IF EXISTS "Allow delete settings" ON public.settings;
 
 -- PROPERTIES POLICIES
 CREATE POLICY "Public can read properties"
@@ -96,16 +97,24 @@ CREATE POLICY "Allow delete leads"
 -- SETTINGS POLICIES
 CREATE POLICY "Public can read settings"
   ON public.settings FOR SELECT
+  TO anon, authenticated
   USING (true);
-
-CREATE POLICY "Allow update settings"
-  ON public.settings FOR UPDATE
-  USING (true)
-  WITH CHECK (true);
 
 CREATE POLICY "Allow insert settings"
   ON public.settings FOR INSERT
+  TO anon, authenticated
   WITH CHECK (true);
+
+CREATE POLICY "Allow update settings"
+  ON public.settings FOR UPDATE
+  TO anon, authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow delete settings"
+  ON public.settings FOR DELETE
+  TO anon, authenticated
+  USING (true);
 
 -- 4. STORAGE BUCKET FOR PROPERTY IMAGES
 INSERT INTO storage.buckets (id, name, public)
