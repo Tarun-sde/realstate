@@ -15,7 +15,7 @@ const formatArea = (value, unit) => {
 export default function PropertyDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getById, getProperties } = usePropertyStore()
+  const { getById, getProperties, isLoading } = usePropertyStore()
   const { user } = useAuthStore()
   const { openLogin, openLeadModal, leadSubmittedProperties } = useUIStore()
 
@@ -31,6 +31,18 @@ export default function PropertyDetailPage() {
 
   // Check if lead already submitted for this property
   const leadSubmitted = leadSubmittedProperties?.has?.(id)
+
+  if (!property && isLoading) {
+    return (
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
+        <div style={{
+          width: 48, height: 48, border: '4px solid #e2e8f0', borderTopColor: '#1a3c5e',
+          borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '60px auto 20px'
+        }} />
+        <p style={{ color: '#64748b', fontSize: 16, fontWeight: 500 }}>Loading property details...</p>
+      </div>
+    )
+  }
 
   if (!property) {
     return (
