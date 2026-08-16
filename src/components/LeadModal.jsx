@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { X, User, Phone, MessageSquare, CheckCircle } from 'lucide-react'
 import { usePropertyStore, useUIStore, useAuthStore } from '../store'
 import toast from 'react-hot-toast'
-import { BROKER_INFO } from '../data/mockData'
 
 export default function LeadModal({ onLeadSubmit }) {
   const { showLeadModal, selectedPropertyId, closeLeadModal, markLeadSubmitted } = useUIStore()
-  const { addLead, getById } = usePropertyStore()
+  const { addLead, getById, brokerInfo } = usePropertyStore()
+  const BROKER_INFO = brokerInfo
   const { user } = useAuthStore()
 
   const [form, setForm] = useState({ name: user?.name || '', phone: '', message: '' })

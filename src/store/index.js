@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import supabase from '../config/supabase'
-import { MOCK_PROPERTIES, ADMIN_CREDENTIALS } from '../data/mockData'
+import { MOCK_PROPERTIES, ADMIN_CREDENTIALS, BROKER_INFO } from '../data/mockData'
 
 const ADMIN_EMAILS = [
   (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim(),
@@ -176,7 +176,40 @@ export const useAuthStore = create(
 export const usePropertyStore = create((set, get) => ({
   properties: [],
   leads: [],
+  brokerInfo: BROKER_INFO,
   isLoading: false,
+
+  // Fetch settings / broker info from Supabase
+  fetchSettings: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'broker_info')
+        .maybeSingle()
+
+      if (!error && data?.value) {
+        set({ brokerInfo: { ...BROKER_INFO, ...data.value } })
+      }
+    } catch (err) {
+      console.warn('Note: settings table check:', err)
+    }
+  },
+
+  updateSettings: async (newInfo) => {
+    set({ brokerInfo: newInfo })
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert({ key: 'broker_info', value: newInfo, updated_at: new Date().toISOString() })
+
+      if (error) {
+        console.error('Error saving settings to Supabase:', error)
+      }
+    } catch (err) {
+      console.error('Failed to update settings:', err)
+    }
+  },
 
   // Fetch properties from Supabase
   fetchProperties: async () => {

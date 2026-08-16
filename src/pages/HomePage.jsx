@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import { Search, MapPin, Maximize2, TrendingUp, Shield, Phone, ChevronRight, Star, ArrowRight } from 'lucide-react'
 import PropertyCard from '../components/PropertyCard'
 import { usePropertyStore } from '../store'
-import { BROKER_INFO } from '../data/mockData'
 import { CardSkeleton } from '../components/Skeletons'
 
 const LOCATIONS = ['All', 'Boring Road', 'Bailey Road', 'Kankarbagh', 'Danapur', 'Saguna More', 'Phulwari Sharif']
 
 export default function HomePage() {
-  const { getProperties, getFeatured } = usePropertyStore()
+  const { getProperties, getFeatured, brokerInfo } = usePropertyStore()
+  const BROKER_INFO = brokerInfo
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('available')

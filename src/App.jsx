@@ -44,13 +44,14 @@ function AppLayout({ children }) {
 
 export default function App() {
   const { init } = useAuthStore()
-  const { fetchProperties } = usePropertyStore()
+  const { fetchProperties, fetchSettings } = usePropertyStore()
 
   useEffect(() => {
     // Initialize Supabase auth session listener
     init()
-    // Load properties from Supabase on startup
+    // Load properties & settings from Supabase on startup
     fetchProperties()
+    fetchSettings()
   }, [])
 
   return (

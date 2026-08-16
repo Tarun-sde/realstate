@@ -36,9 +36,17 @@ CREATE TABLE IF NOT EXISTS public.leads (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. ENABLE ROW LEVEL SECURITY (RLS)
+-- 3. CREATE SETTINGS TABLE (BROKER INFO / SITE CONFIG)
+CREATE TABLE IF NOT EXISTS public.settings (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. ENABLE ROW LEVEL SECURITY (RLS)
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if any
 DROP POLICY IF EXISTS "Public can read properties" ON public.properties;
@@ -49,6 +57,10 @@ DROP POLICY IF EXISTS "Allow delete properties" ON public.properties;
 DROP POLICY IF EXISTS "Public can read leads" ON public.leads;
 DROP POLICY IF EXISTS "Anyone can insert leads" ON public.leads;
 DROP POLICY IF EXISTS "Allow delete leads" ON public.leads;
+
+DROP POLICY IF EXISTS "Public can read settings" ON public.settings;
+DROP POLICY IF EXISTS "Allow update settings" ON public.settings;
+DROP POLICY IF EXISTS "Allow insert settings" ON public.settings;
 
 -- PROPERTIES POLICIES
 CREATE POLICY "Public can read properties"
@@ -80,6 +92,20 @@ CREATE POLICY "Public can read leads"
 CREATE POLICY "Allow delete leads"
   ON public.leads FOR DELETE
   USING (true);
+
+-- SETTINGS POLICIES
+CREATE POLICY "Public can read settings"
+  ON public.settings FOR SELECT
+  USING (true);
+
+CREATE POLICY "Allow update settings"
+  ON public.settings FOR UPDATE
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow insert settings"
+  ON public.settings FOR INSERT
+  WITH CHECK (true);
 
 -- 4. STORAGE BUCKET FOR PROPERTY IMAGES
 INSERT INTO storage.buckets (id, name, public)
@@ -158,3 +184,17 @@ INSERT INTO public.properties (title, location, area_value, area_unit, price, pr
   'North-East', '40 feet', true, 25.5820, 85.0610, '+91 62055 11532',
   ARRAY['/land1.png', '/land4.png', '/land2.png']
 );
+
+-- 6. SEED SETTINGS (BROKER INFO)
+INSERT INTO public.settings (key, value) VALUES
+('broker_info', '{
+  "name": "Jaa Maa Gauri Properties",
+  "tagline": "Your Trusted Land Broker in Patna",
+  "phone": "+91 62055 11532",
+  "whatsapp": "916205511532",
+  "email": "Ankitkumarr0232@gmail.com",
+  "address": "Sarvodya Nagar near Jagat Narayan Lal college, khaugual Patna 801105",
+  "established": "2012"
+}'::jsonb)
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+

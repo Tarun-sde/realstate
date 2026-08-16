@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { MapPin, Menu, X, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react'
-import { useAuthStore, useUIStore } from '../store'
-import { BROKER_INFO } from '../data/mockData'
+import { useAuthStore, useUIStore, usePropertyStore } from '../store'
 
 export default function Navbar() {
   const location = useLocation()
@@ -11,6 +10,8 @@ export default function Navbar() {
   const [userDropdown, setUserDropdown] = useState(false)
   const { user, isAdmin, logout } = useAuthStore()
   const { openLogin, openRegister } = useUIStore()
+  const brokerInfo = usePropertyStore(s => s.brokerInfo)
+  const BROKER_INFO = brokerInfo
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)

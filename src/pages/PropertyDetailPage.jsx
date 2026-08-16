@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { MapPin, Maximize2, ArrowLeft, Phone, CheckCircle, X, ChevronLeft, ChevronRight, Expand } from 'lucide-react'
 import { usePropertyStore, useAuthStore, useUIStore } from '../store'
-import { BROKER_INFO } from '../data/mockData'
 import PropertyCard from '../components/PropertyCard'
 
 const formatArea = (value, unit) => {
@@ -15,7 +14,8 @@ const formatArea = (value, unit) => {
 export default function PropertyDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getById, getProperties, isLoading } = usePropertyStore()
+  const { getById, getProperties, isLoading, brokerInfo } = usePropertyStore()
+  const BROKER_INFO = brokerInfo
   const { user } = useAuthStore()
   const { openLogin, openLeadModal, leadSubmittedProperties } = useUIStore()
 

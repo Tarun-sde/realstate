@@ -2,18 +2,18 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, List, PlusCircle, Users, LogOut, Edit2, Trash2,
-  CheckCircle, XCircle, MapPin, TrendingUp, Eye, Plus, X, Save, ChevronDown, Upload, ImagePlus,
+  CheckCircle, XCircle, MapPin, TrendingUp, Eye, Plus, X, Save, ChevronDown, Upload, ImagePlus, Settings,
 } from 'lucide-react'
 import { useAuthStore, usePropertyStore } from '../store'
 import supabase from '../config/supabase'
 import toast from 'react-hot-toast'
-import { BROKER_INFO } from '../data/mockData'
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'listings', label: 'Listings', icon: List },
   { id: 'add', label: 'Add Property', icon: PlusCircle },
   { id: 'leads', label: 'Inquiries', icon: Users },
+  { id: 'settings', label: 'Company Settings', icon: Settings },
 ]
 
 const EMPTY_FORM = {
@@ -26,11 +26,14 @@ const EMPTY_FORM = {
 
 export default function AdminPage() {
   const { user, isAdmin, logout } = useAuthStore()
-  const { getProperties, getLeads, addProperty, updateProperty, deleteProperty, toggleSold, fetchLeads } = usePropertyStore()
+  const { getProperties, getLeads, addProperty, updateProperty, deleteProperty, toggleSold, fetchLeads, brokerInfo, updateSettings } = usePropertyStore()
+  const BROKER_INFO = brokerInfo
   const navigate = useNavigate()
 
   const [tab, setTab] = useState('overview')
   const [form, setForm] = useState(EMPTY_FORM)
+  const [brokerForm, setBrokerForm] = useState(brokerInfo)
+  const [savingSettings, setSavingSettings] = useState(false)
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
@@ -41,6 +44,10 @@ export default function AdminPage() {
   useEffect(() => {
     if (isAdmin) fetchLeads()
   }, [isAdmin])
+
+  useEffect(() => {
+    if (brokerInfo) setBrokerForm(brokerInfo)
+  }, [brokerInfo])
 
   if (!user || !isAdmin) {
     return (
@@ -696,6 +703,69 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* COMPANY SETTINGS */}
+          {tab === 'settings' && (
+            <div className="animate-fadeIn" style={{ maxWidth: 650 }}>
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                setSavingSettings(true)
+                try {
+                  await updateSettings(brokerForm)
+                  toast.success('Company info updated successfully!')
+                } catch (err) {
+                  toast.error('Failed to update company info.')
+                } finally {
+                  setSavingSettings(false)
+                }
+              }}>
+                <div style={{ background: 'white', borderRadius: 16, padding: 28, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'grid', gap: 20 }}>
+                  <h3 style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>Company & Contact Information</h3>
+
+                  <div>
+                    <label className="form-label">Business / Agency Name</label>
+                    <input className="form-input" value={brokerForm?.name || ''} onChange={e => setBrokerForm(p => ({ ...p, name: e.target.value }))} required />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Tagline</label>
+                    <input className="form-input" value={brokerForm?.tagline || ''} onChange={e => setBrokerForm(p => ({ ...p, tagline: e.target.value }))} />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div>
+                      <label className="form-label">Phone Number</label>
+                      <input className="form-input" value={brokerForm?.phone || ''} onChange={e => setBrokerForm(p => ({ ...p, phone: e.target.value }))} required />
+                    </div>
+                    <div>
+                      <label className="form-label">WhatsApp Number (e.g. 916205511532)</label>
+                      <input className="form-input" value={brokerForm?.whatsapp || ''} onChange={e => setBrokerForm(p => ({ ...p, whatsapp: e.target.value }))} required />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div>
+                      <label className="form-label">Contact Email</label>
+                      <input className="form-input" type="email" value={brokerForm?.email || ''} onChange={e => setBrokerForm(p => ({ ...p, email: e.target.value }))} required />
+                    </div>
+                    <div>
+                      <label className="form-label">Established Year</label>
+                      <input className="form-input" value={brokerForm?.established || ''} onChange={e => setBrokerForm(p => ({ ...p, established: e.target.value }))} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="form-label">Office Address</label>
+                    <textarea className="form-input" rows={3} value={brokerForm?.address || ''} onChange={e => setBrokerForm(p => ({ ...p, address: e.target.value }))} required style={{ resize: 'vertical' }} />
+                  </div>
+
+                  <button type="submit" className="btn-primary" disabled={savingSettings} style={{ justifyContent: 'center', marginTop: 10 }}>
+                    {savingSettings ? 'Saving...' : <><Save size={16} /> Save Settings to Supabase</>}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
         </div>
