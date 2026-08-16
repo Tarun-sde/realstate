@@ -117,8 +117,8 @@ export const MOCK_PROPERTIES = [
 ]
 
 export const ADMIN_CREDENTIALS = {
-  email: 'admin@jaamaagauriproperties.com',
-  password: 'Admin@123',
+  email: 'demo.admin@gmail.com',
+  password: 'admin123',
 }
 
 export const BROKER_INFO = {

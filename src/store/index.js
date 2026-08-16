@@ -5,9 +5,8 @@ import { MOCK_PROPERTIES, ADMIN_CREDENTIALS } from '../data/mockData'
 
 const ADMIN_EMAILS = [
   (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim(),
-  'mukeshjoshi0980@gmail.com',
-  'admin@jaamaagauriproperties.com',
-  'admin@jaiproperties.com',
+  'demo.admin@gmail.com',
+  'admin@gmail.com',
 ].filter(Boolean)
 
 export const isUserAdmin = (email) => {
@@ -67,11 +66,11 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null })
         const cleanEmail = email.trim().toLowerCase()
 
-        // 1. Check built-in fallback admin credentials
+        // 1. Check built-in demo admin credentials
         const isBuiltinAdmin =
           (cleanEmail === ADMIN_CREDENTIALS.email.toLowerCase() ||
-           cleanEmail === 'mukeshjoshi0980@gmail.com' ||
-           cleanEmail === 'admin@jaiproperties.com') &&
+           cleanEmail === 'demo.admin@gmail.com' ||
+           cleanEmail === 'admin@gmail.com') &&
           (password === ADMIN_CREDENTIALS.password ||
            password === 'admin123' ||
            password === 'Admin@123')
@@ -80,7 +79,7 @@ export const useAuthStore = create(
           const adminUser = {
             id: 'admin-local-master',
             email: cleanEmail,
-            name: 'Master Admin',
+            name: 'Demo Admin',
             role: 'admin',
             isLocalAdmin: true,
           }
