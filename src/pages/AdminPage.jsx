@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, List, PlusCircle, Users, LogOut, Edit2, Trash2,
-  CheckCircle, XCircle, MapPin, TrendingUp, Eye, Plus, X, Save, ChevronDown, Upload, ImagePlus, Settings,
+  CheckCircle, XCircle, MapPin, TrendingUp, Eye, Plus, X, Save, ChevronDown, Upload, ImagePlus, Settings, Menu,
 } from 'lucide-react'
 import { useAuthStore, usePropertyStore } from '../store'
 import supabase from '../config/supabase'
@@ -31,6 +31,7 @@ export default function AdminPage() {
   const navigate = useNavigate()
 
   const [tab, setTab] = useState('overview')
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [brokerForm, setBrokerForm] = useState(brokerInfo)
   const [savingSettings, setSavingSettings] = useState(false)
@@ -173,10 +174,15 @@ export default function AdminPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div className="admin-layout">
+      {/* Mobile Sidebar Overlay Backdrop */}
+      {mobileSidebarOpen && (
+        <div className="admin-sidebar-backdrop" onClick={() => setMobileSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="admin-sidebar" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '28px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+      <aside className={`admin-sidebar ${mobileSidebarOpen ? 'open' : ''}`}>
+        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <div style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, fontSize: 18, color: 'white' }}>
             Admin Panel
           </div>
@@ -191,7 +197,7 @@ export default function AdminPage() {
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => { setTab(t.id); setMobileSidebarOpen(false) }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12, width: '100%',
                   padding: '12px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
@@ -232,38 +238,43 @@ export default function AdminPage() {
         </div>
       </aside>
 
-      {/* Main */}
-      <main style={{ flex: 1, overflow: 'auto' }}>
+      {/* Main Content Area */}
+      <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
         {/* Top Bar */}
-        <div style={{
-          background: 'white', padding: '0 28px', height: 64,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 50,
-        }}>
-          <h2 style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>
-            {TABS.find(t => t.id === tab)?.label}
-          </h2>
+        <div className="admin-topbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              className="admin-mobile-menu-btn"
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            >
+              {mobileSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+            <h2 style={{ fontWeight: 700, fontSize: 18, color: '#0f172a' }}>
+              {TABS.find(t => t.id === tab)?.label}
+            </h2>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 36, height: 36, borderRadius: '50%',
               background: 'linear-gradient(135deg, #1a3c5e, #2563ab)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontSize: 14, fontWeight: 700,
+              color: 'white', fontSize: 14, fontWeight: 700, flexShrink: 0,
             }}>
               A
             </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>Admin</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>{user.email}</div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a', lineHeight: 1.2 }}>Admin</div>
+              <div style={{ fontSize: 11, color: '#64748b', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
             </div>
           </div>
         </div>
 
-        <div style={{ padding: 28 }}>
+        <div className="admin-main-padding">
           {/* OVERVIEW */}
           {tab === 'overview' && (
             <div className="animate-fadeIn">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginBottom: 32 }}>
+              <div className="admin-stats-grid">
                 {[
                   { label: 'Total Properties', value: properties.length, color: '#1a3c5e', bg: '#eff6ff', icon: '🏡' },
                   { label: 'Available', value: available, color: '#059669', bg: '#f0fdf4', icon: '✅' },
@@ -451,7 +462,7 @@ export default function AdminPage() {
                         <label className="form-label">Location *</label>
                         <input className="form-input" name="location" value={form.location} onChange={handleChange} placeholder="e.g., Boring Road, Patna" required />
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div className="admin-grid-2">
                         <div>
                           <label className="form-label">Price (₹) *</label>
                           <input className="form-input" name="price" type="number" value={form.price} onChange={handleChange} placeholder="4800000" required />
@@ -461,7 +472,7 @@ export default function AdminPage() {
                           <input className="form-input" name="price_display" value={form.price_display} onChange={handleChange} placeholder="₹48 Lakh" required />
                         </div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div className="admin-grid-2">
                         <div>
                           <label className="form-label">Area Value *</label>
                           <input className="form-input" name="area_value" type="number" step="0.01" value={form.area_value} onChange={handleChange} placeholder="2400" required />
@@ -475,7 +486,7 @@ export default function AdminPage() {
                           </select>
                         </div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div className="admin-grid-2">
                         <div>
                           <label className="form-label">Facing</label>
                           <select className="form-input" name="facing" value={form.facing} onChange={handleChange}>
@@ -493,7 +504,7 @@ export default function AdminPage() {
                         <label className="form-label">Description *</label>
                         <textarea className="form-input" name="description" value={form.description} onChange={handleChange} rows={4} placeholder="Describe the property..." required style={{ resize: 'vertical' }} />
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                      <div className="admin-grid-3">
                         <div>
                           <label className="form-label">Status</label>
                           <select className="form-input" name="status" value={form.status} onChange={handleChange}>
@@ -734,7 +745,7 @@ export default function AdminPage() {
                     <input className="form-input" value={brokerForm?.tagline || ''} onChange={e => setBrokerForm(p => ({ ...p, tagline: e.target.value }))} />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="admin-grid-2">
                     <div>
                       <label className="form-label">Phone Number</label>
                       <input className="form-input" value={brokerForm?.phone || ''} onChange={e => setBrokerForm(p => ({ ...p, phone: e.target.value }))} required />
@@ -745,7 +756,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="admin-grid-2">
                     <div>
                       <label className="form-label">Contact Email</label>
                       <input className="form-input" type="email" value={brokerForm?.email || ''} onChange={e => setBrokerForm(p => ({ ...p, email: e.target.value }))} required />
