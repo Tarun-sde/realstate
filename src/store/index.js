@@ -1,17 +1,18 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import supabase from '../config/supabase'
-import { MOCK_PROPERTIES, ADMIN_CREDENTIALS, BROKER_INFO } from '../data/mockData'
+import { MOCK_PROPERTIES, BROKER_INFO } from '../data/mockData'
 
-const ADMIN_EMAILS = [
-  (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim(),
-  'demo.admin@gmail.com',
-  'admin@gmail.com',
-].filter(Boolean)
+export const isUserAdmin = (user) => {
+  if (!user) return false
+  const email = (user.email || '').toLowerCase().trim()
+  const envAdmin = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim()
+  
+  // Check if role is admin in Supabase user metadata OR matches env admin email
+  const isRoleAdmin = user.user_metadata?.role === 'admin'
+  const isEnvAdmin = envAdmin && email === envAdmin
 
-export const isUserAdmin = (email) => {
-  if (!email) return false
-  return ADMIN_EMAILS.includes(email.toLowerCase().trim())
+  return isRoleAdmin || isEnvAdmin
 }
 
 // ---- AUTH STORE ----
@@ -28,7 +29,7 @@ export const useAuthStore = create(
         try {
           const { data: { session } } = await supabase.auth.getSession()
           if (session?.user) {
-            const isAdmin = isUserAdmin(session.user.email)
+            const isAdmin = isUserAdmin(session.user)
             set({
               user: {
                 id: session.user.id,
@@ -43,7 +44,7 @@ export const useAuthStore = create(
           // Listen for auth changes
           supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-              const isAdmin = isUserAdmin(session.user.email)
+              const isAdmin = isUserAdmin(session.user)
               set({
                 user: {
                   id: session.user.id,
@@ -53,7 +54,7 @@ export const useAuthStore = create(
                 },
                 isAdmin,
               })
-            } else if (!get().user?.isLocalAdmin) {
+            } else {
               set({ user: null, isAdmin: false })
             }
           })
@@ -66,39 +67,14 @@ export const useAuthStore = create(
         set({ isLoading: true, error: null })
         const cleanEmail = email.trim().toLowerCase()
 
-        // 1. Check built-in demo admin credentials
-        const isBuiltinAdmin =
-          (cleanEmail === ADMIN_CREDENTIALS.email.toLowerCase() ||
-           cleanEmail === 'demo.admin@gmail.com' ||
-           cleanEmail === 'admin@gmail.com') &&
-          (password === ADMIN_CREDENTIALS.password ||
-           password === 'admin123' ||
-           password === 'Admin@123')
-
-        if (isBuiltinAdmin) {
-          const adminUser = {
-            id: 'admin-local-master',
-            email: cleanEmail,
-            name: 'Demo Admin',
-            role: 'admin',
-            isLocalAdmin: true,
-          }
-          set({
-            user: adminUser,
-            isAdmin: true,
-            isLoading: false,
-          })
-          return { success: true, isAdmin: true }
-        }
-
-        // 2. Try Supabase Auth
+        // Secure Authentication via Supabase Auth
         try {
           const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password })
           if (error) {
             set({ error: error.message, isLoading: false })
             return { success: false }
           }
-          const isAdmin = isUserAdmin(data.user.email)
+          const isAdmin = isUserAdmin(data.user)
           set({
             user: {
               id: data.user.id,

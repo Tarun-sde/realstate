@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { X, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { useAuthStore, useUIStore } from '../store'
-import { ADMIN_CREDENTIALS } from '../data/mockData'
 import toast from 'react-hot-toast'
 
 export default function AuthModal() {
@@ -16,26 +15,6 @@ export default function AuthModal() {
   const handleChange = (e) => {
     setForm(p => ({ ...p, [e.target.name]: e.target.value }))
     clearError()
-  }
-
-  const handleAdminAutofill = () => {
-    setForm({
-      name: 'Admin',
-      email: ADMIN_CREDENTIALS.email,
-      password: ADMIN_CREDENTIALS.password,
-    })
-    clearError()
-    toast.success('Admin credentials loaded!')
-  }
-
-  const handleAdminDirectLogin = async () => {
-    const result = await login(ADMIN_CREDENTIALS.email, ADMIN_CREDENTIALS.password)
-    if (result.success) {
-      toast.success('Welcome back, Admin!')
-      closeAuthModal()
-    } else {
-      toast.error(error || 'Failed to login as admin.')
-    }
   }
 
   const handleSubmit = async (e) => {
@@ -84,53 +63,6 @@ export default function AuthModal() {
             <X size={18} color="#64748b" />
           </button>
         </div>
-
-        {/* Quick Admin Access Box */}
-        {authMode === 'login' && (
-          <div style={{
-            background: 'linear-gradient(135deg, #f0fdf4, #e0f2fe)',
-            border: '1px solid #bae6fd',
-            borderRadius: 12,
-            padding: '12px 14px',
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 10,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 8, background: '#1a3c5e',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-              }}>
-                <ShieldCheck size={18} color="white" />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>Admin Account</div>
-                <div style={{ fontSize: 11, color: '#475569' }}>
-                  {ADMIN_CREDENTIALS.email}
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleAdminAutofill}
-              style={{
-                background: '#1a3c5e',
-                color: 'white',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: 8,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                flexShrink: 0,
-              }}
-            >
-              Fill Admin
-            </button>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

@@ -1,11 +1,6 @@
 // Configuration & fallback data for demo / offline use
 export const MOCK_PROPERTIES = []
 
-export const ADMIN_CREDENTIALS = {
-  email: 'demo.admin@gmail.com',
-  password: 'admin123',
-}
-
 export const BROKER_INFO = {
   name: 'Jaa Maa Gauri Properties',
   tagline: 'Your Trusted Land Broker in Patna',
